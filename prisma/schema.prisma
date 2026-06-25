@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  phone           String    @unique
+  name            String
+  role            UserRole
+  avatar          String?
+  membership      Membership @default(FREE)
+  membershipExpire DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  elderProfile    ElderProfile?
+  medications     Medication[]
+  healthRecords   HealthRecord[]
+  voiceLogs       VoiceLog[]
+  dailyHealths    DailyHealth[]
+  parentProfile   ParentProfile?
+  alerts          Alert[]
+  spendingRecords SpendingRecord[]
+
+  @@index([phone])
+  @@index([role])
+}
+
+enum UserRole {
+  ELDER
+  PARENT
+}
+
+enum Membership {
+  FREE
+  BASIC
+  PREMIUM
+  FAMILY
+}
+
+model ElderProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  age             Int?
+  address         String?
+  hospital        String?
+  bloodType       String?
+  allergies       String?
+  emergencyContact String?
+  emergencyPhone  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ParentProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+}
+
+model ElderLink {
+  id              String   @id @default(uuid())
+  parentId        String
+  parent          ParentProfile @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  elderId         String
+  elder           User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  relationship    String
+  isVerified      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@unique([parentId, elderId])
+  @@index([parentId])
+  @@index([elderId])
+}
+
+model Medication {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  dosage          String
+  times           Json
+  startDate       DateTime
+  endDate         DateTime?
+  isActive        Boolean  @default(true)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  logs            MedicationLog[]
+
+  @@index([userId, isActive])
+}
+
+model MedicationLog {
+  id              String   @id @default(uuid())
+  medicationId    String
+  medication      Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  scheduledTime   DateTime
+  actualTime      DateTime?
+  status          MedicationStatus @default(PENDING)
+  createdAt       DateTime @default(now())
+
+  @@index([medicationId, scheduledTime])
+}
+
+enum MedicationStatus {
+  PENDING
+  TAKEN
+  MISSED
+  SKIPPED
+}
+
+model HealthRecord {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            HealthType
+  title           String
+  content         Json
+  aiAnalysis      String?
+  fileUrl         String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId, type, createdAt])
+}
+
+enum HealthType {
+  CHECKUP
+  DAILY
+  CONSULT
+  PRESCRIPTION
+}
+
+model DailyHealth {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bloodPressure   Json?
+  bloodSugar      Float?
+  heartRate       Int?
+  weight          Float?
+  sleep           Json?
+  mood            String?
+  notes           String?
+  date            DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+model VoiceLog {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audioUrl        String?
+  transcript      String
+  intent          String
+  response        String
+  responseAudio   String?
+  tokenUsage      Int      @default(0)
+  duration        Int?
+  createdAt       DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([intent])
+}
+
+model Alert {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId        String
+  type            AlertType
+  severity        Severity
+  title           String
+  description     String
+  metadata        Json?
+  isRead          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([parentId, isRead])
+  @@index([userId, type])
+}
+
+enum AlertType {
+  SCAM_DETECTED
+  SUSPICIOUS_CALL
+  HEALTH_EMERGENCY
+  MEDICATION_MISSED
+  LOW_ACTIVITY
+  BUDGET_EXCEEDED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model SpendingRecord {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount          Decimal  @db.Decimal(10, 2)
+  category        String
+  subcategory     String?
+  description     String?
+  date            DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([userId, date])
+  @@index([userId, category])
+}
