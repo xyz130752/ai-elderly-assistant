@@ -7,22 +7,22 @@ import Link from 'next/link';
 const PAYMENT_ITEMS = [
   { 
     icon: '💡', label: '电费', desc: '交电费', 
-    appId: 'wx9a39c0c7b8a4b3e5',  // 网上国网
+    appId: 'wx5b2c549d952fadca',  // 网上国网
     path: '/pages/index/index',
   },
   { 
     icon: '💧', label: '水费', desc: '交水费', 
-    appId: '',  // 需要申请
+    appId: '',
     path: '',
   },
   { 
     icon: '🔥', label: '燃气费', desc: '交燃气费', 
-    appId: '',  // 需要申请
+    appId: '',
     path: '',
   },
   { 
     icon: '📱', label: '话费', desc: '充话费', 
-    appId: 'wx234567890abcdef',  // 微信充值
+    appId: 'wx5b2c549d952fadca',  // 微信充值
     path: '/pages/recharge/index',
   },
   { 
