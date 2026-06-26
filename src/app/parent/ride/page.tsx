@@ -10,12 +10,6 @@ declare global {
   }
 }
 
-const CAR_TYPES = [
-  { id: 'fast', icon: '🚗', label: '快车', desc: '经济实惠', multiplier: 1 },
-  { id: 'comfort', icon: '🚙', label: '舒适型', desc: '宽敞舒适', multiplier: 1.5 },
-  { id: 'business', icon: '🚐', label: '商务车', desc: '可坐6人', multiplier: 2.2 },
-];
-
 // 深圳常用地点（带坐标）
 const COMMON_PLACES = [
   { name: '龙华区人民医院', address: '深圳市龙华区建设东路', lat: 22.6425, lng: 114.0218 },
@@ -33,7 +27,6 @@ export default function RidePage() {
   const [destination, setDestination] = useState('');
   const [pickupPlace, setPickupPlace] = useState<typeof COMMON_PLACES[0] | null>(null);
   const [destPlace, setDestPlace] = useState<typeof COMMON_PLACES[0] | null>(null);
-  const [carType, setCarType] = useState('fast');
   const [showPickupSuggestions, setShowPickupSuggestions] = useState(false);
   const [showDestSuggestions, setShowDestSuggestions] = useState(false);
   const [routeInfo, setRouteInfo] = useState<{ distance: string; duration: string; price: number } | null>(null);
@@ -115,9 +108,6 @@ export default function RidePage() {
       mapInstanceRef.current.setFitView();
     }
   };
-
-  const selectedCar = CAR_TYPES.find(c => c.id === carType);
-  const finalPrice = routeInfo ? Math.round(routeInfo.price * (selectedCar?.multiplier || 1)) : 0;
 
   // 跳转到高德地图App打车
   const handleGaodeRide = () => {
@@ -258,7 +248,7 @@ export default function RidePage() {
         {/* 路线信息 */}
         {routeInfo && (
           <div className="bg-white rounded-xl p-4 shadow-sm border mb-4">
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <div>
                 <div className="text-sm text-gray-500">距离</div>
                 <div className="text-lg font-bold">{routeInfo.distance}</div>
@@ -267,51 +257,16 @@ export default function RidePage() {
                 <div className="text-sm text-gray-500">预计时间</div>
                 <div className="text-lg font-bold">{routeInfo.duration}</div>
               </div>
-              <div>
-                <div className="text-sm text-gray-500">预计费用</div>
-                <div className="text-lg font-bold text-primary">¥{finalPrice}</div>
-              </div>
             </div>
           </div>
         )}
-
-        {/* 选择车型 */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border mb-4">
-          <div className="font-bold text-gray-800 mb-3">选择车型</div>
-          <div className="space-y-2">
-            {CAR_TYPES.map((car) => (
-              <button
-                key={car.id}
-                onClick={() => setCarType(car.id)}
-                className={`w-full p-3 rounded-xl border text-left transition-all ${
-                  carType === car.id 
-                    ? 'border-primary bg-orange-50' 
-                    : 'border-gray-200'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span style={{ fontSize: '28px' }}>{car.icon}</span>
-                  <div className="flex-1">
-                    <div className="font-bold">{car.label}</div>
-                    <div className="text-sm text-gray-500">{car.desc}</div>
-                  </div>
-                  {routeInfo && (
-                    <div className="text-primary font-bold">
-                      ¥{Math.round(routeInfo.price * car.multiplier)}
-                    </div>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* 确认叫车按钮 - 直接跳转高德地图 */}
         <button 
           onClick={handleSubmit}
           className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-lg mb-4"
         >
-          {routeInfo ? `确认叫车 ¥${finalPrice} → 打开高德地图` : '规划路线'}
+          🚗 打开高德地图帮爸爸叫车
         </button>
 
         {/* 提示 */}
